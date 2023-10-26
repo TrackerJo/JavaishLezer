@@ -1,0 +1,206 @@
+@precedence { FunctionCallStmt,Assignment,bang @left,Parameters,Arguments, ParenthesizedExpression,var @left, sub @left,call @left,conditional @left,times @left, divide @left, plus @left, minus @left, mutation @right }
+
+@top
+Program {
+  ( statement)*
+}
+
+expression { (Number | String | BinaryExpression | ParenthesizedExpression | Declaration | ListElement | ListSubscript | ConditionalExpression | FunctionCall !call| VarName !var)}
+
+Declaration {
+  LetKW space DataType space VarName space Equal space expression Period
+}
+
+ParenthesizedExpression { 
+  OpenParenthesis expression space (Plus | Minus | Divide | Multiply) space expression ClosedParenthesis
+}
+
+BinaryExpression {
+  expression !times space Multiply space expression |
+  expression !plus space Plus space expression |
+  expression !divide space Divide space expression |
+  expression !minus space Minus space expression 
+}
+
+ConditionalExpression {
+  expression !conditional space Condition space expression
+}
+
+Mutation {
+  AddMutation |
+  SubtractMutation |
+  DivideMutation |
+  MultiplyMutation |
+  RemoveMutation |
+  RemoveAtMutation 
+  
+  
+}
+
+AddMutation {
+  AddKW space expression space ToKW VarName Period
+}
+
+SubtractMutation {
+ SubtractKW space expression space "from" space VarName Period
+}
+
+DivideMutation {
+  DivideKW space VarName space "by" space expression Period
+}
+
+MultiplyMutation {
+  MultiplyKW space VarName space "by" space expression Period
+} 
+
+RemoveMutation {
+  (RemoveKW | RemoveAllKW) space expression space "from" space VarName Period
+}
+
+RemoveAtMutation {
+  RemoveAtKW space ListSubscript Period
+}
+
+IfStatement {
+  IfKW space expression space Block (ElseIfClause)* (ElseKW Block)?
+}
+
+ElseIfClause {
+  ElseKW space IfKW space expression space Block
+}
+
+Assignment{
+  VarName space Equal space expression Period
+}
+
+@tokens {
+  space { @whitespace+ }
+  Comment { "//" ![\n]* }
+  StringLiteral { @asciiLetter+ }
+  Period {"."}
+  LetKW { "let" }
+  IfKW { "if" }
+  ElseKW {"else"}
+  ForKW { "for" }
+  ForEachKW { "each" }
+  ForWhenKW {"when"}
+  AddKW { "add" }
+  SubtractKW { "subtract" }
+  MultiplyKW { "multiply" }
+  DivideKW { "divide" }
+  RemoveKW { "remove" }
+  RemoveAtKW { "removeAt" }
+  RemoveAllKW { "removeAll" }
+  ReturnKW {"return"}
+  ToKW {"to" space}
+  SubKW { "sub" }
+  WhileKW {"while" }
+  FunctionKW { "function" }
+  Keyword { Let | SubtractKW | AddKW | MultiplyKW | DivideKW}
+  Equal { "=" }
+  String { '"' (![\\\n"] | "\\" _)* '"' }
+  Number { @digit+ | @digit+"."@digit+ }
+  Operator { Plus | Minus | Divide | Multiply }
+  Plus { "+" }
+  Minus { "-" }
+  Multiply { "*" }
+  Divide { "/" }
+  OpenBracket { "{" }
+  
+  DataType { "String" | "int" | "float" | "bool" | "int[]" | "String[]" | "bool[]" | "float[]"}
+  
+
+  OpenParenthesis { "(" }
+  ClosedParenthesis { ")" }
+  
+  
+   WordCondition {
+    "greater than" | "less than" | "greater than or equal to" | "less than or equal to" | "equals" | "not equals" | "and" | "or"
+  }
+
+  ClosedBracket { "}" }
+  
+  Condition {
+    "==" | 
+    "!=" | 
+    "<" | 
+    ">" | 
+    "<=" | 
+    ">=" | 
+    "&&" | 
+    "||" | 
+    WordCondition
+  }
+
+  Bang {"!"}
+
+  
+  VarName { StringLiteral }
+
+  @precedence {Bang, VarName,StringLiteral}
+  @precedence {  Comment,Operator, Divide}
+  @precedence { DataType, VarName, Parameter }
+  @precedence { String, Number}
+  @precedence {ReturnKW,ToKW,FunctionKW,Condition,ForKW,ElseKW, ForEachKW ,ForWhenKW,WhileKW ,RemoveAllKW, RemoveAtKW, RemoveKW ,AddKW, SubtractKW, DivideKW, MultiplyKW, LetKW, IfKW ,SubKW,VarName,StringLiteral}
+
+  // ...
+}
+
+ReturnStatement{
+  ReturnKW space expression? Period
+}
+
+
+statement {
+  Mutation | IfStatement | WhileStatement | ForStatement | FunctionDeclaration | FunctionCall | ReturnStatement
+}
+
+Parameters {
+    OpenParenthesis (DataType space VarName ("," DataType space VarName)*)? ClosedParenthesis
+  }
+FunctionCallStmt{
+  FunctionCall Period
+}
+
+
+FunctionDeclaration{
+  FunctionKW space VarName Parameters Block
+}
+
+Arguments {
+  (expression ("," expression)*)?
+}
+
+FunctionCall{
+  VarName OpenParenthesis Arguments ClosedParenthesis Period
+}
+
+Block {
+  OpenBracket statement* ClosedBracket
+}
+
+ListElement { "[" expression ("," expression)* "]"}
+
+ListSubscript {
+  VarName !sub space SubKW space expression
+}
+
+WhileStatement{
+ WhileKW space expression space Block
+}
+
+ForStatement {
+  ForKW space (ForWhen | ForEach) space Block
+}
+
+ForWhen {
+  ForWhenKW space expression space "increment" space VarName space "by" space expression
+}
+
+ForEach{
+  ForEachKW space VarName space "in" space expression
+}
+
+@skip { Comment }
+
+@external propSource highlighting from "./highlight.js"
